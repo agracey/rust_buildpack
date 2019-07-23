@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo "default_process_types:"
+echo "  web: ls /home/vcap/app/ && /home/vcap/app/release" 

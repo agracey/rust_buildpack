@@ -1,0 +1,50 @@
+#!/bin/bash
+
+###
+# Finalize gets run if it's the last buildpack able to run on the code.
+# 
+# It's responsible for creating the directory structure that get's built into the droplet then container.
+# 
+###
+
+export BUILDPACK_DIR=`dirname $(readlink -f ${BASH_SOURCE%/*})`
+BUILD_DIR=$1
+CACHE_DIR=$2
+DEPS_DIR=$3/$4
+export CARGO_HOME=$CACHE_DIR/.cargo
+export RUSTUP_HOME=$CACHE_DIR/.rust
+source $CARGO_HOME/env
+
+echo "Running Finalize Script of rust buildpack"
+
+
+# Find application name with cargo
+
+jq --version
+
+export APP_NAME=$(cargo metadata --format-version 1| jq -r '.packages[].targets[] | select( .kind | map(. == "bin") ) | select ( .src_path | contains(".cargo/registry") | . != true ) | .name')
+
+echo $APP_NAME
+# Move need files to the working directory
+cp $BUILD_DIR/Cargo.toml .
+cp $BUILD_DIR/Cargo.lock .
+cp -r $BUILD_DIR/src .
+
+
+# Add node bin as PATH for running npm below.
+export PATH=$RUSTUP_HOME/bin:$PATH
+
+cargo build --release
+
+cp target/release/$APP_NAME release
+
+cat <<EOF >> Rocket.toml
+[production]
+address = "0.0.0.0"
+port = 8080
+EOF
+
+# clean up fo release
+rm -rf src/
+rm Cargo*
+rm -rf target

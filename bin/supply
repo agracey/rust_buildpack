@@ -1,0 +1,28 @@
+#!/bin/bash
+
+###
+# Supply is where any needed dependencies are downloaded and installed.
+# 
+# I'm pulling down a recent version of node.js and installing it into the dependencies directory. 
+#
+# There are four directories that we care about:
+# - BUILDPACK_DIR is the directory where the buildpack it self gets unpacked to.
+# - BUILD_DIR is 
+# 
+###
+echo "Running Supply Script of rust buildpack"
+
+export BUILDPACK_DIR=`dirname $(readlink -f ${BASH_SOURCE%/*})`
+BUILD_DIR=$1
+CACHE_DIR=$2
+DEPS_DIR=$3/$4
+
+export CARGO_HOME=$CACHE_DIR/.cargo
+export RUSTUP_HOME=$CACHE_DIR/.rust
+
+curl https://sh.rustup.rs -sSf | sh -s -- -y
+source $CARGO_HOME/env
+
+rustup default nightly
+
+exit 0
