@@ -1,0 +1,6 @@
+# Rust Buildpack
+
+## TODO:
+
+ - Work with any project, not just ones hosting with Rocket 
+ - Write docs
